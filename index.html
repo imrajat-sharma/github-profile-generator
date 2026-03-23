@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Profile README Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #238636;
+            --primary-hover: #2ea043;
+            --bg-dark: #0d1117;
+            --bg-card: #161b22;
+            --bg-input: #0d1117;
+            --border: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-purple: #bc8cff;
+            --accent-orange: #f0883e;
+            --danger: #f85149;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header h1 svg {
+            fill: var(--text-primary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            background: var(--border);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-danger {
+            background: transparent;
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Layout */
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            height: calc(100vh - 57px);
+        }
+
+        .editor-panel {
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            padding: 24px;
+        }
+
+        .preview-panel {
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel-header h2 {
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-tabs {
+            display: flex;
+            gap: 4px;
+        }
+
+        .panel-tab {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .panel-tab.active {
+            background: var(--border);
+            color: var(--text-primary);
+        }
+
+        /* Sections */
+        .section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: background 0.2s;
+            user-select: none;
+        }
+
+        .section-header:hover {
+            background: rgba(255,255,255,0.03);
+        }
+
+        .section-header h3 {
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-toggle {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 18px;
+            transition: transform 0.3s;
+        }
+
+        .section-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .section-body {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .section-body.hidden {
+            display: none;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="url"],
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+        }
+
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* Checkbox & Toggle */
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+        }
+
+        .toggle-group label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .toggle {
+            position: relative;
+            width: 40px;
+            height: 22px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: var(--border);
+            border-radius: 11px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        .toggle input:checked + .toggle-slider {
+            background: var(--primary);
+        }
+
+        .toggle input:checked + .toggle-slider::before {
+            transform: translateX(18px);
+        }
+
+        /* Skills / Tech Tags */
+        .skills-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .skill-tag {
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .skill-tag:hover {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .skill-tag.selected {
+            background: rgba(88, 166, 255, 0.15);
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .skill-tag img {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Social Links */
+        .social-item {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .social-item label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .social-item input {
+            width: 100%;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-size: 13px;
+        }
+
+        .social-item input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        /* Preview */
+        .preview-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 32px;
+            min-height: 400px;
+        }
+
+        .preview-content h1,
+        .preview-content h2,
+        .preview-content h3 {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+        }
+
+        .preview-content h1 { font-size: 28px; }
+        .preview-content h2 { font-size: 22px; margin-top: 24px; }
+        .preview-content h3 { font-size: 18px; margin-top: 20px; }
+
+        .preview-content p {
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+        }
+
+        .preview-content img {
+            max-width: 100%;
+        }
+
+        .preview-content ul {
+            padding-left: 24px;
+            margin-bottom: 12px;
+        }
+
+        .preview-content li {
+            margin-bottom: 4px;
+            color: var(--text-secondary);
+        }
+
+        .preview-content a {
+            color: var(--accent-blue);
+            text-decoration: none;
+        }
+
+        .preview-content a:hover {
+            text-decoration: underline;
+        }
+
+        /* Raw Markdown */
+        .markdown-raw {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 13px;
+            color: var(--text-primary);
+            white-space: pre-wrap;
+            word-break: break-all;
+            min-height: 400px;
+            line-height: 1.8;
+        }
+
+        /* Addons section */
+        .addon-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .addon-card {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .addon-card:hover {
+            border-color: var(--accent-blue);
+        }
+
+        .addon-card.selected {
+            border-color: var(--primary);
+            background: rgba(35, 134, 54, 0.1);
+        }
+
+        .addon-card h4 {
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .addon-card p {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--primary);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 1000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Color picker */
+        .color-options {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .color-option {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .color-option:hover,
+        .color-option.selected {
+            border-color: var(--text-primary);
+            transform: scale(1.15);
+        }
+
+        /* Stat theme options */
+        .theme-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .theme-option {
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 12px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .theme-option:hover {
+            border-color: var(--accent-blue);
+        }
+
+        .theme-option.selected {
+            background: rgba(88, 166, 255, 0.15);
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        /* Emoji selector */
+        .emoji-btn {
+            font-size: 20px;
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 4px 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .emoji-btn:hover {
+            background: var(--border);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .editor-panel {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .header {
+                padding: 12px 16px;
+            }
+
+            .header h1 {
+                font-size: 16px;
+            }
+        }
+
+        /* Badge display in preview */
+        .badge-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .preview-content .align-center {
+            text-align: center;
+        }
+
+        /* Project Cards */
+        .project-entry {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .project-entry .remove-project {
+            float: right;
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .skill-category {
+            margin-bottom: 12px;
+        }
+
+        .skill-category h4 {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <h1>
+            <svg height="24" width="24" viewBox="0 0 16 16">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+            README Generator
+        </h1>
+        <div class="header-actions">
+            <button class="btn btn-danger" onclick="resetAll()">🗑️ Reset</button>
+            <button class="btn" onclick="copyMarkdown()">📋 Copy Markdown</button>
+            <button class="btn btn-primary" onclick="downloadMarkdown()">⬇️ Download README.md</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Editor Panel -->
+        <div class="editor-panel">
+            <div class="panel-header">
+                <h2>⚙️ Editor</h2>
+            </div>
+
+            <!-- Basic Info Section -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3>👤 Basic Information</h3>
+                    <button class="section-toggle">▼</button>
+                </div>
+                <div class="section-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Display Name</label>
+                            <input type="text" id="displayName" placeholder="John Doe" oninput="generatePreview()">
+                        </div>
+                        <div class="form-group">
+                            <label>GitHub Username</label>
+                            <input type="text" id="githubUsername" placeholder="johndoe" oninput="generatePreview()">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Subtitle / Tagline</label>
+                        <input type="text" id="subtitle" placeholder="A passionate developer from India" oninput="generatePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>About Me</label>
+                        <textarea id="aboutMe" placeholder="Tell something about yourself..." oninput="generatePreview()"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Typing SVG Text (comma separated)</label>
+                        <input type="text" id="typingSvg" placeholder="Full Stack Developer, Open Source Contributor, Tech Enthusiast" oninput="generatePreview()">
+                    </div>
+                    <div class="toggle-group">
+                        <label>Show Header Banner</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="showBanner" checked onchange="generatePreview()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-group">
+                        <label>Show Profile View Counter</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="showViewCounter" checked onchange="generatePreview()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Work Section -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3>💼 Current Work</h3>
+                    <button class="section-toggle">▼</button>
+                </div>
+                <div class="section-body">
+                    <div class="form-group">
+                        <label>🔭 Currently working on</label>
+                        <input type="text" id="workingOn" placeholder="My awesome project" oninput="generatePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>🌱 Currently learning</label>
+                        <input type="text" id="learning" placeholder="React, Node.js, AWS" oninput="generatePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>👯 Looking to collaborate on</label>
+                        <input type="text" id="collaborate" placeholder="Open source projects" oninput="generatePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>🤝 Looking for help with</label>
+                        <input type="text" id="helpWith" placeholder="My personal project" oninput="generatePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>💬 Ask me about</label>
+                        <input type="text" id="askAbout" placeholder="React, JavaScript, CSS" oninput="generatePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>📫 How to reach me</label>
+                        <input type="text" id="reachMe" placeholder="email@example.com" oninput="generatePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>⚡ Fun fact</label>
+                        <input type="text" id="funFact" placeholder="I think I am funny" oninput="generatePreview()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Skills Section -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3>🛠️ Skills & Technologies</h3>
+                    <button class="section-toggle">▼</button>
+                </div>
+                <div class="section-body">
+                    <div class="skill-category">
+                        <h4>Languages</h4>
+                        <div class="skills-grid" id="languages-grid"></div>
+                    </div>
+                    <div class="skill-category">
+                        <h4>Frontend</h4>
+                        <div class="skills-grid" id="frontend-grid"></div>
+                    </div>
+                    <div class="skill-category">
+                        <h4>Backend</h4>
+                        <div class="skills-grid" id="backend-grid"></div>
+                    </div>
+                    <div class="skill-category">
+                        <h4>Database</h4>
+                        <div class="skills-grid" id="database-grid"></div>
+                    </div>
+                    <div class="skill-category">
+                        <h4>DevOps & Tools</h4>
+                        <div class="skills-grid" id="devops-grid"></div>
+                    </div>
+                    <div class="skill-category">
+                        <h4>Other</h4>
+                        <div class="skills-grid" id="other-grid"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Social Links Section -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3>🔗 Social Links</h3>
+                    <button class="section-toggle">▼</button>
+                </div>
+                <div class="section-body">
+                    <div class="social-item">
+                        <label>Twitter / X</label>
+                        <input type="text" id="social-twitter" placeholder="username" oninput="generatePreview()">
+                    </div>
+                    <div class="social-item">
+                        <label>LinkedIn</label>
+                        <input type="text" id="social-linkedin" placeholder="username" oninput="generatePreview()">
+                    </div>
+                    <div class="social-item">
+                        <label>Dev.to</label>
+                        <input type="text" id="social-devto" placeholder="username" oninput="generatePreview()">
+                    </div>
+                    <div class="social-item">
+                        <label>Medium</label>
+                        <input type="text" id="social-medium" placeholder="@username" oninput="generatePreview()">
+                    </div>
+                    <div class="social-item">
+                        <label>Stack Overflow</label>
+                        <input type="text" id="social-stackoverflow" placeholder="userid/username" oninput="generatePreview()">
+                    </div>
+                    <div class="social-item">
+                        <label>YouTube</label>
+                        <input type="text" id="social-youtube" placeholder="channel-id" oninput="generatePreview()">
+                    </div>
+                    <div class="social-item">
+                        <label>Instagram</label>
+                        <input type="text" id="social-instagram" placeholder="username" oninput="generatePreview()">
+                    </div>
+                    <div class="social-item">
+                        <label>Discord</label>
+                        <input type="text" id="social-discord" placeholder="invite-code" oninput="generatePreview()">
+                    </div>
+                    <div class="social-item">
+                        <label>Website</label>
+                        <input type="text" id="social-website" placeholder="https://yoursite.com" oninput="generatePreview()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- GitHub Stats Section -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3>📊 GitHub Stats</h3>
+                    <button class="section-toggle">▼</button>
+                </div>
+                <div class="section-body">
+                    <div class="toggle-group">
+                        <label>GitHub Stats Card</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="showStats" checked onchange="generatePreview()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-group">
+                        <label>Top Languages Card</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="showTopLangs" checked onchange="generatePreview()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-group">
+                        <label>Streak Stats</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="showStreak" checked onchange="generatePreview()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-group">
+                        <label>GitHub Trophies</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="showTrophies" onchange="generatePreview()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-group">
+                        <label>Contribution Graph</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="showGraph" onchange="generatePreview()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label>Stats Theme</label>
+                        <div class="theme-options" id="themeOptions"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add-ons Section -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3>✨ Add-ons</h3>
+                    <button class="section-toggle">▼</button>
+                </div>
+                <div class="section-body">
+                    <div class="toggle-group">
+                        <label>Random Dev Quote</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="showQuote" onchange="generatePreview()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-group">
+                        <label>Random Dev Meme</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="showMeme" onchange="generatePreview()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-group">
+                        <label>Snake Animation</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="showSnake" onchange="generatePreview()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-group">
+                        <label>Spotify Now Playing</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="showSpotify" onchange="generatePreview()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-group">
+                        <label>Support / Buy Me a Coffee</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="showSupport" onchange="generatePreview()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-group" id="coffeeName" style="display:none; margin-top: 10px;">
+                        <label>Buy Me a Coffee Username</label>
+                        <input type="text" id="coffeeUsername" placeholder="yourname" oninput="generatePreview()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Featured Projects Section -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3>📁 Featured Projects</h3>
+                    <button class="section-toggle">▼</button>
+                </div>
+                <div class="section-body">
+                    <div id="projectsList"></div>
+                    <button class="btn" onclick="addProject()" style="margin-top: 8px;">+ Add Project</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Preview Panel -->
+        <div class="preview-panel">
+            <div class="panel-header">
+                <h2>👁️ Preview</h2>
+                <div class="panel-tabs">
+                    <button class="panel-tab active" onclick="switchPreviewTab('preview', this)">Preview</button>
+                    <button class="panel-tab" onclick="switchPreviewTab('markdown', this)">Markdown</button>
+                </div>
+            </div>
+            <div id="previewView" class="preview-content"></div>
+            <div id="markdownView" class="markdown-raw" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">✅ Copied to clipboard!</div>
+
+    <script>
+        // ========================
+        // DATA
+        // ========================
+        const skillsData = {
+            languages: [
+                { name: 'JavaScript', icon: 'javascript' },
+                { name: 'TypeScript', icon: 'typescript' },
+                { name: 'Python', icon: 'python' },
+                { name: 'Java', icon: 'java' },
+                { name: 'C', icon: 'c' },
+                { name: 'C++', icon: 'cplusplus' },
+                { name: 'C#', icon: 'csharp' },
+                { name: 'Go', icon: 'go' },
+                { name: 'Rust', icon: 'rust' },
+                { name: 'Ruby', icon: 'ruby' },
+                { name: 'PHP', icon: 'php' },
+                { name: 'Swift', icon: 'swift' },
+                { name: 'Kotlin', icon: 'kotlin' },
+                { name: 'Dart', icon: 'dart' },
+                { name: 'Scala', icon: 'scala' },
+                { name: 'R', icon: 'r' },
+                { name: 'Lua', icon: 'lua' },
+                { name: 'Perl', icon: 'perl' },
+                { name: 'Haskell', icon: 'haskell' },
+                { name: 'Elixir', icon: 'elixir' },
+            ],
+            frontend: [
+                { name: 'React', icon: 'react' },
+                { name: 'Vue.js', icon: 'vuedotjs' },
+                { name: 'Angular', icon: 'angular' },
+                { name: 'Svelte', icon: 'svelte' },
+                { name: 'Next.js', icon: 'nextdotjs' },
+                { name: 'Nuxt.js', icon: 'nuxtdotjs' },
+                { name: 'HTML5', icon: 'html5' },
+                { name: 'CSS3', icon: 'css3' },
+                { name: 'Sass', icon: 'sass' },
+                { name: 'Tailwind', icon: 'tailwindcss' },
+                { name: 'Bootstrap', icon: 'bootstrap' },
+                { name: 'Material UI', icon: 'mui' },
+                { name: 'Redux', icon: 'redux' },
+                { name: 'jQuery', icon: 'jquery' },
+                { name: 'Webpack', icon: 'webpack' },
+                { name: 'Vite', icon: 'vite' },
+                { name: 'Gatsby', icon: 'gatsby' },
+                { name: 'Astro', icon: 'astro' },
+            ],
+            backend: [
+                { name: 'Node.js', icon: 'nodedotjs' },
+                { name: 'Express', icon: 'express' },
+                { name: 'Django', icon: 'django' },
+                { name: 'Flask', icon: 'flask' },
+                { name: 'FastAPI', icon: 'fastapi' },
+                { name: 'Spring', icon: 'spring' },
+                { name: 'Laravel', icon: 'laravel' },
+                { name: 'Rails', icon: 'rubyonrails' },
+                { name: '.NET', icon: 'dotnet' },
+                { name: 'NestJS', icon: 'nestjs' },
+                { name: 'GraphQL', icon: 'graphql' },
+                { name: 'Nginx', icon: 'nginx' },
+                { name: 'Apache', icon: 'apache' },
+            ],
+            database: [
+                { name: 'MySQL', icon: 'mysql' },
+                { name: 'PostgreSQL', icon: 'postgresql' },
+                { name: 'MongoDB', icon: 'mongodb' },
+                { name: 'Redis', icon: 'redis' },
+                { name: 'SQLite', icon: 'sqlite' },
+                { name: 'Firebase', icon: 'firebase' },
+                { name: 'Supabase', icon: 'supabase' },
+                { name: 'DynamoDB', icon: 'amazondynamodb' },
+                { name: 'Cassandra', icon: 'apachecassandra' },
+                { name: 'MariaDB', icon: 'mariadb' },
+            ],
+            devops: [
+                { name: 'Docker', icon: 'docker' },
+                { name: 'Kubernetes', icon: 'kubernetes' },
+                { name: 'AWS', icon: 'amazonaws' },
+                { name: 'GCP', icon: 'googlecloud' },
+                { name: 'Azure', icon: 'microsoftazure' },
+                { name: 'Git', icon: 'git' },
+                { name: 'GitHub Actions', icon: 'githubactions' },
+                { name: 'Jenkins', icon: 'jenkins' },
+                { name: 'Terraform', icon: 'terraform' },
+                { name: 'Linux', icon: 'linux' },
+                { name: 'Vercel', icon: 'vercel' },
+                { name: 'Netlify', icon: 'netlify' },
+                { name: 'Heroku', icon: 'heroku' },
+            ],
+            other: [
+                { name: 'Figma', icon: 'figma' },
+                { name: 'Photoshop', icon: 'adobephotoshop' },
+                { name: 'Illustrator', icon: 'adobeillustrator' },
+                { name: 'Blender', icon: 'blender' },
+                { name: 'Unity', icon: 'unity' },
+                { name: 'Unreal', icon: 'unrealengine' },
+                { name: 'TensorFlow', icon: 'tensorflow' },
+                { name: 'PyTorch', icon: 'pytorch' },
+                { name: 'Arduino', icon: 'arduino' },
+                { name: 'Raspberry Pi', icon: 'raspberrypi' },
+                { name: 'Postman', icon: 'postman' },
+                { name: 'Jira', icon: 'jira' },
+                { name: 'Flutter', icon: 'flutter' },
+                { name: 'React Native', icon: 'react' },
+                { name: 'Electron', icon: 'electron' },
+            ]
+        };
+
+        const themes = [
+            'default', 'dark', 'radical', 'merko', 'gruvbox',
+            'tokyonight', 'onedark', 'cobalt', 'synthwave', 'highcontrast',
+            'dracula', 'monokai', 'vue', 'shades-of-purple', 'nightowl',
+            'buefy', 'blue-green', 'algolia', 'great-gatsby', 'material-palenight'
+        ];
+
+        let selectedSkills = new Set();
+        let projects = [];
+        let selectedTheme = 'radical';
+
+        // ========================
+        // INITIALIZATION
+        // ========================
+        function init() {
+            renderSkills();
+            renderThemes();
+            generatePreview();
+        }
+
+        function renderSkills() {
+            Object.keys(skillsData).forEach(category => {
+                const grid = document.getElementById(`${category}-grid`);
+                if (!grid) return;
+                grid.innerHTML = '';
+                skillsData[category].forEach(skill => {
+                    const tag = document.createElement('button');
+                    tag.className = 'skill-tag';
+                    tag.dataset.skill = skill.name;
+                    tag.dataset.icon = skill.icon;
+                    tag.innerHTML = `<img src="https://cdn.simpleicons.org/${skill.icon}" alt="${skill.name}" onerror="this.style.display='none'"> ${skill.name}`;
+                    tag.onclick = () => {
+                        const key = `${category}-${skill.name}`;
+                        if (selectedSkills.has(key)) {
+                            selectedSkills.delete(key);
+                            tag.classList.remove('selected');
+                        } else {
+                            selectedSkills.add(key);
+                            tag.classList.add('selected');
+                        }
+                        generatePreview();
+                    };
+                    grid.appendChild(tag);
+                });
+            });
+        }
+
+        function renderThemes() {
+            const container = document.getElementById('themeOptions');
+            container.innerHTML = '';
+            themes.forEach(theme => {
+                const btn = document.createElement('button');
+                btn.className = `theme-option ${theme === selectedTheme ? 'selected' : ''}`;
+                btn.textContent = theme;
+                btn.onclick = () => {
+                    selectedTheme = theme;
+                    document.querySelectorAll('.theme-option').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    generatePreview();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        // ========================
+        // SECTION TOGGLE
+        // ========================
+        function toggleSection(header) {
+            const body = header.nextElementSibling;
+            const toggle = header.querySelector('.section-toggle');
+            body.classList.toggle('hidden');
+            toggle.classList.toggle('collapsed');
+        }
+
+        // ========================
+        // PROJECTS
+        // ========================
+        function addProject() {
+            projects.push({ name: '', description: '', url: '', tech: '' });
+            renderProjects();
+        }
+
+        function removeProject(index) {
+            projects.splice(index, 1);
+            renderProjects();
+            generatePreview();
+        }
+
+        function renderProjects() {
+            const container = document.getElementById('projectsList');
+            container.innerHTML = '';
+            projects.forEach((proj, i) => {
+                const entry = document.createElement('div');
+                entry.className = 'project-entry';
+                entry.innerHTML = `
+                    <button class="remove-project" onclick="removeProject(${i})">✕</button>
+                    <div class="form-group">
+                        <label>Project Name</label>
+                        <input type="text" value="${proj.name}" placeholder="Project name" oninput="projects[${i}].name=this.value; generatePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" value="${proj.description}" placeholder="Short description" oninput="projects[${i}].description=this.value; generatePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>Repository URL</label>
+                        <input type="text" value="${proj.url}" placeholder="https://github.com/user/repo" oninput="projects[${i}].url=this.value; generatePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>Technologies</label>
+                        <input type="text" value="${proj.tech}" placeholder="React, Node.js, MongoDB" oninput="projects[${i}].tech=this.value; generatePreview()">
+                    </div>
+                `;
+                container.appendChild(entry);
+            });
+        }
+
+        // ========================
+        // PREVIEW TAB SWITCHING
+        // ========================
+        function switchPreviewTab(tab, btn) {
+            document.querySelectorAll('.panel-tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if (tab === 'preview') {
+                document.getElementById('previewView').style.display = 'block';
+                document.getElementById('markdownView').style.display = 'none';
+            } else {
+                document.getElementById('previewView').style.display = 'none';
+                document.getElementById('markdownView').style.display = 'block';
+            }
+        }
+
+        // ========================
+        // SHOW/HIDE SUPPORT FIELD
+        // ========================
+        document.getElementById('showSupport')?.addEventListener('change', function() {
+            document.getElementById('coffeeName').style.display = this.checked ? 'block' : 'none';
+        });
+
+        // ========================
+        // MARKDOWN GENERATION
+        // ========================
+        function generateMarkdown() {
+            const name = document.getElementById('displayName').value.trim();
+            const username = document.getElementById('githubUsername').value.trim();
+            const subtitle = document.getElementById('subtitle').value.trim();
+            const aboutMe = document.getElementById('aboutMe').value.trim();
+            const typingSvg = document.getElementById('typingSvg').value.trim();
+            const showBanner = document.getElementById('showBanner').checked;
+            const showViewCounter = document.getElementById('showViewCounter').checked;
+
+            const workingOn = document.getElementById('workingOn').value.trim();
+            const learning = document.getElementById('learning').value.trim();
+            const collaborate = document.getElementById('collaborate').value.trim();
+            const helpWith = document.getElementById('helpWith').value.trim();
+            const askAbout = document.getElementById('askAbout').value.trim();
+            const reachMe = document.getElementById('reachMe').value.trim();
+            const funFact = document.getElementById('funFact').value.trim();
+
+            const showStats = document.getElementById('showStats').checked;
+            const showTopLangs = document.getElementById('showTopLangs').checked;
+            const showStreak = document.getElementById('showStreak').checked;
+            const showTrophies = document.getElementById('showTrophies').checked;
+            const showGraph = document.getElementById('showGraph').checked;
+
+            const showQuote = document.getElementById('showQuote').checked;
+            const showMeme = document.getElementById('showMeme').checked;
+            const showSnake = document.getElementById('showSnake').checked;
+            const showSpotify = document.getElementById('showSpotify').checked;
+            const showSupport = document.getElementById('showSupport').checked;
+            const coffeeUsername = document.getElementById('coffeeUsername').value.trim();
+
+            const twitter = document.getElementById('social-twitter').value.trim();
+            const linkedin = document.getElementById('social-linkedin').value.trim();
+            const devto = document.getElementById('social-devto').value.trim();
+            const medium = document.getElementById('social-medium').value.trim();
+            const stackoverflow = document.getElementById('social-stackoverflow').value.trim();
+            const youtube = document.getElementById('social-youtube').value.trim();
+            const instagram = document.getElementById('social-instagram').value.trim();
+            const discord = document.getElementById('social-discord').value.trim();
+            const website = document.getElementById('social-website').value.trim();
+
+            let md = '';
+            const uname = username || 'username';
+
+            // Header Banner
+            if (showBanner && name) {
+                md += `<h1 align="center">Hi 👋, I'm ${name}</h1>\n`;
+            } else if (name) {
+                md += `# Hi 👋, I'm ${name}\n\n`;
+            }
+
+            // Subtitle
+            if (subtitle) {
+                md += `<h3 align="center">${subtitle}</h3>\n\n`;
+            }
+
+            // Typing SVG
+            if (typingSvg) {
+                const lines = encodeURIComponent(typingSvg);
+                md += `<p align="center">\n  <a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&pause=1000&color=F75C7E&center=true&vCenter=true&width=435&lines=${lines.replace(/,/g, ';')}" alt="Typing SVG" /></a>\n</p>\n\n`;
+            }
+
+            // Profile views
+            if (showViewCounter && username) {
+                md += `<p align="left"> <img src="https://komarev.com/ghpvc/?username=${uname}&label=Profile%20views&color=0e75b6&style=flat" alt="${uname}" /> </p>\n\n`;
+            }
+
+            // About
+            if (aboutMe) {
+                md += `## 🧑‍💻 About Me\n\n${aboutMe}\n\n`;
+            }
+
+            // Current Work Items
+            const workItems = [];
+            if (workingOn) workItems.push(`- 🔭 I'm currently working on **${workingOn}**`);
+            if (learning) workItems.push(`- 🌱 I'm currently learning **${learning}**`);
+            if (collaborate) workItems.push(`- 👯 I'm looking to collaborate on **${collaborate}**`);
+            if (helpWith) workItems.push(`- 🤝 I'm looking for help with **${helpWith}**`);
+            if (askAbout) workItems.push(`- 💬 Ask me about **${askAbout}**`);
+            if (reachMe) workItems.push(`- 📫 How to reach me **${reachMe}**`);
+            if (funFact) workItems.push(`- ⚡ Fun fact **${funFact}**`);
+
+            if (workItems.length > 0) {
+                md += workItems.join('\n\n') + '\n\n';
+            }
+
+            // Social Links
+            const socials = [];
+            if (twitter) socials.push(`<a href="https://twitter.com/${twitter}" target="blank"><img align="center" src="https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white" alt="twitter" /></a>`);
+            if (linkedin) socials.push(`<a href="https://linkedin.com/in/${linkedin}" target="blank"><img align="center" src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="linkedin" /></a>`);
+            if (devto) socials.push(`<a href="https://dev.to/${devto}" target="blank"><img align="center" src="https://img.shields.io/badge/dev.to-0A0A0A?style=for-the-badge&logo=devdotto&logoColor=white" alt="devto" /></a>`);
+            if (medium) socials.push(`<a href="https://medium.com/${medium}" target="blank"><img align="center" src="https://img.shields.io/badge/Medium-12100E?style=for-the-badge&logo=medium&logoColor=white" alt="medium" /></a>`);
+            if (stackoverflow) socials.push(`<a href="https://stackoverflow.com/users/${stackoverflow}" target="blank"><img align="center" src="https://img.shields.io/badge/Stack_Overflow-FE7A16?style=for-the-badge&logo=stack-overflow&logoColor=white" alt="stackoverflow" /></a>`);
+            if (youtube) socials.push(`<a href="https://youtube.com/c/${youtube}" target="blank"><img align="center" src="https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="youtube" /></a>`);
+            if (instagram) socials.push(`<a href="https://instagram.com/${instagram}" target="blank"><img align="center" src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="instagram" /></a>`);
+            if (discord) socials.push(`<a href="https://discord.gg/${discord}" target="blank"><img align="center" src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="discord" /></a>`);
+            if (website) socials.push(`<a href="${website}" target="blank"><img align="center" src="https://img.shields.io/badge/Website-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white" alt="website" /></a>`);
+
+            if (socials.length > 0) {
+                md += `## 🌐 Connect with me\n\n<p align="left">\n${socials.join('\n')}\n</p>\n\n`;
+            }
+
+            // Skills
+            const skillBadges = [];
+            selectedSkills.forEach(key => {
+                const [category, skillName] = key.split('-');
+                const skillList = skillsData[category];
+                if (skillList) {
+                    const skill = skillList.find(s => s.name === skillName);
+                    if (skill) {
+                        const badgeName = skill.name.replace(/ /g, '%20').replace(/#/g, '%23').replace(/\+/g, '%2B');
+                        skillBadges.push(`<img src="https://img.shields.io/badge/${badgeName}-000?style=for-the-badge&logo=${skill.icon}&logoColor=white" alt="${skill.name}" />`);
+                    }
+                }
+            });
+
+            if (skillBadges.length > 0) {
+                md += `## 💻 Tech Stack\n\n<p align="left">\n${skillBadges.join('\n')}\n</p>\n\n`;
+            }
+
+            // Featured Projects
+            const validProjects = projects.filter(p => p.name);
+            if (validProjects.length > 0) {
+                md += `## 📁 Featured Projects\n\n`;
+                validProjects.forEach(proj => {
+                    md += `### [${proj.name}](${proj.url || '#'})\n`;
+                    if (proj.description) md += `${proj.description}\n`;
+                    if (proj.tech) md += `\n**Tech:** ${proj.tech}\n`;
+                    md += '\n';
+                });
+            }
+
+            // GitHub Stats
+            if (showStats || showTopLangs || showStreak) {
+                md += `## 📊 GitHub Stats\n\n`;
+            }
+
+            if (showStats && username) {
+                md += `<p align="center">\n  <img src="https://github-readme-stats.vercel.app/api?username=${uname}&theme=${selectedTheme}&hide_border=false&include_all_commits=true&count_private=true" alt="GitHub Stats" />\n</p>\n\n`;
+            }
+
+            if (showStreak && username) {
+                md += `<p align="center">\n  <img src="https://github-readme-streak-stats.herokuapp.com/?user=${uname}&theme=${selectedTheme}&hide_border=false" alt="GitHub Streak" />\n</p>\n\n`;
+            }
+
+            if (showTopLangs && username) {
+                md += `<p align="center">\n  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=${uname}&theme=${selectedTheme}&hide_border=false&include_all_commits=true&count_private=true&layout=compact" alt="Top Languages" />\n</p>\n\n`;
+            }
+
+            if (showTrophies && username) {
+                md += `## 🏆 GitHub Trophies\n\n<p align="center">\n  <img src="https://github-profile-trophy.vercel.app/?username=${uname}&theme=${selectedTheme}&no-frame=false&no-bg=false&margin-w=4" alt="Trophies" />\n</p>\n\n`;
+            }
+
+            if (showGraph && username) {
+                md += `## 📈 Contribution Graph\n\n<p align="center">\n  <img src="https://github-readme-activity-graph.vercel.app/graph?username=${uname}&theme=${selectedTheme}&hide_border=false" alt="Contribution Graph" />\n</p>\n\n`;
+            }
+
+            // Add-ons
+            if (showQuote) {
+                md += `## ✍️ Random Dev Quote\n\n<p align="center">\n  <img src="https://quotes-github-readme.vercel.app/api?type=horizontal&theme=${selectedTheme}" alt="Dev Quote" />\n</p>\n\n`;
+            }
+
+            if (showMeme) {
+                md += `## 😂 Random Dev Meme\n\n<p align="center">\n  <img src="https://randommeme-five.vercel.app/" width="512px" alt="Dev Meme" />\n</p>\n\n`;
+            }
+
+            if (showSnake && username) {
+                md += `## 🐍 Snake Animation\n\n<p align="center">\n  <img src="https://raw.githubusercontent.com/${uname}/${uname}/output/snake.svg" alt="Snake animation" />\n</p>\n\n`;
+            }
+
+            if (showSpotify) {
+                md += `## 🎵 Now Playing\n\n<p align="center">\n  <img src="https://spotify-github-profile.kittinanx.com/api/view?uid=YOUR_SPOTIFY_USER_ID&cover_image=true&theme=default" alt="Spotify" />\n</p>\n\n`;
+            }
+
+            if (showSupport && coffeeUsername) {
+                md += `## 💰 Support\n\n<p align="center">\n  <a href="https://www.buymeacoffee.com/${coffeeUsername}"><img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me a Coffee" /></a>\n</p>\n\n`;
+            }
+
+            // Footer
+            md += `---\n\n<p align="center">⭐️ From <a href="https://github.com/${uname}">${uname}</a></p>\n`;
+
+            return md;
+        }
+
+        // ========================
+        // RENDER PREVIEW
+        // ========================
+        function generatePreview() {
+            const markdown = generateMarkdown();
+
+            // Update raw markdown view
+            document.getElementById('markdownView').textContent = markdown;
+
+            // Render HTML preview (simple markdown to HTML)
+            const html = markdownToHtml(markdown);
+            document.getElementById('previewView').innerHTML = html;
+        }
+
+        function markdownToHtml(md) {
+            let html = md;
+
+            // Already HTML tags - pass through
+            // Handle headers
+            html = html.replace(/^### \[(.*?)\]\((.*?)\)/gm, '<h3><a href="$2" target="_blank">$1</a></h3>');
+            html = html.replace(/^### (.*$)/gm, '<h3>$1</h3>');
+            html = html.replace(/^## (.*$)/gm, '<h2>$1</h2>');
+            html = html.replace(/^# (.*$)/gm, '<h1>$1</h1>');
+
+            // Bold
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            // Links (not already in HTML tags)
+            html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+
+            // List items
+            html = html.replace(/^- (.*$)/gm, '<li>$1</li>');
+            // Wrap consecutive li in ul
+            html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+
+            // Horizontal rule
+            html = html.replace(/^---$/gm, '<hr>');
+
+            // Line breaks
+            html = html.replace(/\n\n/g, '<br><br>');
+            html = html.replace(/\n/g, '\n');
+
+            return html;
+        }
+
+        // ========================
+        // ACTIONS
+        // ========================
+        function copyMarkdown() {
+            const markdown = generateMarkdown();
+            navigator.clipboard.writeText(markdown).then(() => {
+                showToast('✅ Markdown copied to clipboard!');
+            }).catch(() => {
+                // Fallback
+                const textarea = document.createElement('textarea');
+                textarea.value = markdown;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast('✅ Markdown copied to clipboard!');
+            });
+        }
+
+        function downloadMarkdown() {
+            const markdown = generateMarkdown();
+            const blob = new Blob([markdown], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'README.md';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('⬇️ README.md downloaded!');
+        }
+
+        function resetAll() {
+            if (!confirm('Are you sure you want to reset everything?')) return;
+
+            // Clear all inputs
+            document.querySelectorAll('input[type="text"], input[type="url"], textarea').forEach(input => {
+                input.value = '';
+            });
+
+            // Reset checkboxes
+            document.getElementById('showBanner').checked = true;
+            document.getElementById('showViewCounter').checked = true;
+            document.getElementById('showStats').checked = true;
+            document.getElementById('showTopLangs').checked = true;
+            document.getElementById('showStreak').checked = true;
+            document.getElementById('showTrophies').checked = false;
+            document.getElementById('showGraph').checked = false;
+            document.getElementById('showQuote').checked = false;
+            document.getElementById('showMeme').checked = false;
+            document.getElementById('showSnake').checked = false;
+            document.getElementById('showSpotify').checked = false;
+            document.getElementById('showSupport').checked = false;
+
+            // Reset skills
+            selectedSkills.clear();
+            document.querySelectorAll('.skill-tag').forEach(tag => tag.classList.remove('selected'));
+
+            // Reset projects
+            projects = [];
+            renderProjects();
+
+            // Reset theme
+            selectedTheme = 'radical';
+            renderThemes();
+
+            // Hide coffee field
+            document.getElementById('coffeeName').style.display = 'none';
+
+            generatePreview();
+            showToast('🗑️ Everything has been reset!');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        // ========================
+        // INIT
+        // ========================
+        init();
+    </script>
+</body>
+</html>
